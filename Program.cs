@@ -3,6 +3,7 @@ using System.Reflection;
 [AttributeUsage(AttributeTargets.Field)]
 class GeneAttribute : Attribute { }
 
+[System.Serializable]
 class DecisionSet
 {
     public double score;
@@ -10,7 +11,7 @@ class DecisionSet
     [Gene] public double accelerateThreshold;
     [Gene] public double decelerateThreshold;
 
-    private DecisionSet() { }
+    public DecisionSet() { }
 
     public DecisionSet(double score, double turnThreshold, double accelerateThreshold, double decelerateThreshold)
     {
@@ -61,15 +62,13 @@ class GeneticAlgorithm
     public int hybrydazationChancePercent;
     public int mutationChancePercent;
 
-    private static readonly FieldInfo[] _geneFields = typeof(DecisionSet)
-        .GetFields()
-        .Where(f => f.IsDefined(typeof(GeneAttribute)))
-        .ToArray();
+    private readonly FieldInfo[] _geneFields;
+    private readonly Type _instanceType;
 
-    private static DecisionSet CreateEmpty()
-        => (DecisionSet)Activator.CreateInstance(typeof(DecisionSet), nonPublic: true)!;
+    private DecisionSet CreateEmpty()
+        => (DecisionSet)Activator.CreateInstance(_instanceType)!;
 
-    private static DecisionSet Clone(DecisionSet source)
+    private DecisionSet Clone(DecisionSet source)
     {
         var clone = CreateEmpty();
         clone.score = source.score;
@@ -191,6 +190,11 @@ class GeneticAlgorithm
         this.numberOfDrawedDecisionSetsInSelection = numberOfDrawedDecisionSetsInSelection;
         this.hybrydazationChancePercent = hybrydazationChancePercent;
         this.mutationChancePercent = mutationChancePercent;
+        _instanceType = thresholdGenerationMin.GetType();
+        _geneFields = _instanceType
+            .GetFields(BindingFlags.Public | BindingFlags.Instance)
+            .Where(f => f.IsDefined(typeof(GeneAttribute)))
+            .ToArray();
         generateNewGeneration(thresholdGenerationMin, thresholdGenerationMax);
     }
 }
