@@ -1,9 +1,10 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
 [AttributeUsage(AttributeTargets.Field)]
-public class GeneAttribute : Attribute { }
+public class GeneAttribute : System.Attribute { }
 
 [System.Serializable]
 public class DecisionSet
